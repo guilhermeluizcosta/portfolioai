@@ -1,0 +1,45 @@
+Thumbs.db
+.DS_Store
+.gradle
+build/
+target/
+out/
+.micronaut/
+.idea
+*.iml
+*.ipr
+*.iws
+.project
+.settings
+.classpath
+.factorypath
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Compiled class files
+*.class
+
+# Logs
+*.log
+
+# Java
+hs_err_pid*
+replay_pid*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Micronaut
+# Local configuration
+application-local.yml
+application-local.yaml
+application-local.properties
+
+# Docker
+docker-compose.override.yml
