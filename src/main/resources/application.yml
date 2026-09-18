@@ -1,0 +1,13 @@
+micronaut:
+  application:
+    name: portfolioai
+
+langchain4j:
+  open-ai:
+    api-key: ${GROQ_API_KEY}
+    chat-model:
+      base-url: https://api.groq.com/openai/v1
+      model-name: openai/gpt-oss-20b
+      temperature: 0.2
+
+
