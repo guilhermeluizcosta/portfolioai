@@ -51,6 +51,13 @@
       <artifactId>micronaut-langchain4j-openai</artifactId>
     </dependency>
 
+
+    <dependency>
+      <groupId>dev.langchain4j</groupId>
+      <artifactId>langchain4j-embeddings-e5-small-v2-q</artifactId>
+      <version>0.33.0</version>
+    </dependency>
+
     <dependency>
       <groupId>io.micronaut.serde</groupId>
       <artifactId>micronaut-serde-jackson</artifactId>
@@ -109,6 +116,7 @@
       <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
+
 
   </dependencies>
   <build>
@@ -181,6 +189,29 @@
             <arg>-Amicronaut.processing.module=portfolioai</arg>
           </compilerArgs>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>gerar-embeddings</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>java</executable>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath/>
+                <argument>com.portfolioai.ingestion.EmbeddingIngestionTask</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
