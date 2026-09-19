@@ -1,9 +1,8 @@
-package com.portfolioai.domain;
+package com.portfolioai.dto;
 
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
 
 @Introspected
-@Serdeable.Deserializable
-public record Question(String question) {
-}
+@Serdeable
+public record ChatResponse(String answer) {}

@@ -22,6 +22,7 @@
     <micronaut.aot.enabled>false</micronaut.aot.enabled>
     <micronaut.aot.packageName>com.portfolioai.aot.generated</micronaut.aot.packageName>
     <exec.mainClass>com.portfolioai.Application</exec.mainClass>
+    <lombok.version>1.18.42</lombok.version>
   </properties>
 
   <repositories>
@@ -38,11 +39,6 @@
       <groupId>io.micronaut</groupId>
       <artifactId>micronaut-http-server-netty</artifactId>
       <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.micronaut.langchain4j</groupId>
-      <artifactId>micronaut-langchain4j-processor</artifactId>
     </dependency>
 
     <dependency>
@@ -107,6 +103,13 @@
       <artifactId>micronaut-management</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
   <build>
     <plugins>
@@ -132,25 +135,34 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <!-- Uncomment to enable incremental compilation -->
-          <!-- <useIncrementalCompilation>false</useIncrementalCompilation> -->
+          <annotationProcessorPaths>
 
-          <annotationProcessorPaths combine.children="append">
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+
+            <path>
+              <groupId>io.micronaut</groupId>
+              <artifactId>micronaut-inject-java</artifactId>
+              <version>${micronaut.core.version}</version>
+            </path>
+
             <path>
               <groupId>io.micronaut</groupId>
               <artifactId>micronaut-http-validation</artifactId>
               <version>${micronaut.core.version}</version>
             </path>
+
             <path>
               <groupId>io.micronaut.langchain4j</groupId>
               <artifactId>micronaut-langchain4j-processor</artifactId>
+
             </path>
+
             <path>
               <groupId>io.micronaut.serde</groupId>
               <artifactId>micronaut-serde-processor</artifactId>
@@ -162,6 +174,7 @@
                 </exclusion>
               </exclusions>
             </path>
+
           </annotationProcessorPaths>
           <compilerArgs>
             <arg>-Amicronaut.processing.group=com.portfolioai</arg>
