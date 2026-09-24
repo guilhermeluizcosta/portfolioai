@@ -38,7 +38,7 @@ public class AiConfig {
         ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
-                .maxResults(5)
+                .maxResults(10)
                 .minScore(0.5)
                 .build();
 
