@@ -2,6 +2,11 @@ micronaut:
   application:
     name: portfolioai
 
+portfolioai:
+  rag:
+    max-results: 4
+    min-score: 0.65
+
 langchain4j:
   open-ai:
     api-key: ${GROQ_API_KEY}
