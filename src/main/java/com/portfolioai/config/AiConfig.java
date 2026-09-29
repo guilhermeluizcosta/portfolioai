@@ -18,7 +18,7 @@ import java.net.URL;
 @Factory
 public class AiConfig {
     @Singleton
-    public ResumeAssistant resumeAssistant(ChatModel chatLanguageModel) {
+    public ResumeAssistant resumeAssistant(ChatModel chatLanguageModel, RagRetrievalProperties ragProperties) {
 
         EmbeddingStore<TextSegment> embeddingStore;
         try {
@@ -38,8 +38,8 @@ public class AiConfig {
         ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
-                .maxResults(10)
-                .minScore(0.5)
+                .maxResults(ragProperties.maxResults())
+                .minScore(ragProperties.minScore())
                 .build();
 
         return AiServices.builder(ResumeAssistant.class)
