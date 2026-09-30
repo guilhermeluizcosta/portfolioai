@@ -21,10 +21,29 @@ public class EmbeddingIngestionTask {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Iniciando rotina de ingestão de embeddings com metadados...");
+        ingest(Paths.get("docs"), Paths.get("target/classes/embeddings.json"));
+    }
 
-        Path documentPath = Paths.get("docs");
+    static void ingest(Path documentPath, Path outputPath) throws Exception {
         System.out.println("-> Buscando documentos na pasta: " + documentPath.toAbsolutePath());
 
+        List<Document> enrichedDocuments = loadAndEnrichMarkdownDocuments(documentPath);
+
+        System.out.println("-> Total de arquivos .md processados e enriquecidos: " + enrichedDocuments.size());
+
+        DocumentSplitter splitter = DocumentSplitters.recursive(3000, 250);
+        List<TextSegment> segments = splitter.splitAll(enrichedDocuments);
+
+        EmbeddingModel embeddingModel = new E5SmallV2QuantizedEmbeddingModel();
+        InMemoryEmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
+        embeddingStore.addAll(embeddingModel.embedAll(segments).content(), segments);
+
+        embeddingStore.serializeToFile(outputPath.toString());
+
+        System.out.println("Ingestão concluída! Arquivo salvo em: " + outputPath);
+    }
+
+    static List<Document> loadAndEnrichMarkdownDocuments(Path documentPath) throws Exception {
         if (!Files.exists(documentPath)) {
             throw new IllegalStateException("ERRO: O Java não está conseguindo enxergar a pasta: " + documentPath.toAbsolutePath());
         }
@@ -56,18 +75,6 @@ public class EmbeddingIngestionTask {
             throw new IllegalStateException("ERRO: A pasta existe, mas a varredura não encontrou nenhum arquivo .md dentro das subpastas.");
         }
 
-        System.out.println("-> Total de arquivos .md processados e enriquecidos: " + enrichedDocuments.size());
-
-        DocumentSplitter splitter = DocumentSplitters.recursive(3000, 250);
-        List<TextSegment> segments = splitter.splitAll(enrichedDocuments);
-
-        EmbeddingModel embeddingModel = new E5SmallV2QuantizedEmbeddingModel();
-        InMemoryEmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
-        embeddingStore.addAll(embeddingModel.embedAll(segments).content(), segments);
-
-        String outputPath = "target/classes/embeddings.json";
-        embeddingStore.serializeToFile(outputPath);
-
-        System.out.println("Ingestão concluída! Arquivo salvo em: " + outputPath);
+        return enrichedDocuments;
     }
 }
