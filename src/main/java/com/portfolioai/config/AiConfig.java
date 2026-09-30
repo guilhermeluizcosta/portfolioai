@@ -17,10 +17,9 @@ import java.net.URL;
 
 @Factory
 public class AiConfig {
-    @Singleton
-    public ResumeAssistant resumeAssistant(ChatModel chatLanguageModel, RagRetrievalProperties ragProperties) {
 
-        EmbeddingStore<TextSegment> embeddingStore;
+    @Singleton
+    public EmbeddingStore<TextSegment> embeddingStore() {
         try {
             URL embeddingsUrl = getClass().getClassLoader().getResource("embeddings.json");
             if (embeddingsUrl == null) {
@@ -28,10 +27,17 @@ public class AiConfig {
             }
 
             java.nio.file.Path path = java.nio.file.Paths.get(embeddingsUrl.toURI());
-            embeddingStore = InMemoryEmbeddingStore.fromFile(path);
+            return InMemoryEmbeddingStore.fromFile(path);
         } catch (Exception e) {
             throw new RuntimeException("Falha ao carregar o banco de vetores local", e);
         }
+    }
+
+    @Singleton
+    public ResumeAssistant resumeAssistant(
+            ChatModel chatLanguageModel,
+            RagRetrievalProperties ragProperties,
+            EmbeddingStore<TextSegment> embeddingStore) {
 
         EmbeddingModel embeddingModel = new E5SmallV2QuantizedEmbeddingModel();
 
