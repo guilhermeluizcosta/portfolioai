@@ -222,6 +222,7 @@ Definida em `src/main/resources/application.yml`:
 | `langchain4j.open-ai.chat-model.base-url` | `https://api.groq.com/openai/v1` |
 | `langchain4j.open-ai.chat-model.model-name` | `openai/gpt-oss-20b` |
 | `langchain4j.open-ai.chat-model.temperature` | `0.2` |
+| `langchain4j.open-ai.chat-model.timeout` | `90s` (abaixo do `CHAT_REQUEST_TIMEOUT=120s` do Portfolio) |
 
 ### Comandos úteis
 
