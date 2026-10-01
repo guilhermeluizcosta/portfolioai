@@ -4,7 +4,6 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatModel;
 import com.portfolioai.ai.ResumeAssistant;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.embedding.onnx.e5smallv2q.E5SmallV2QuantizedEmbeddingModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
@@ -39,7 +38,7 @@ public class AiConfig {
             RagRetrievalProperties ragProperties,
             EmbeddingStore<TextSegment> embeddingStore) {
 
-        EmbeddingModel embeddingModel = new E5SmallV2QuantizedEmbeddingModel();
+        EmbeddingModel embeddingModel = EmbeddingModelFactory.create();
 
         ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)

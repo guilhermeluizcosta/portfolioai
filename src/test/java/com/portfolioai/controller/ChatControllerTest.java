@@ -34,7 +34,7 @@ class ChatControllerTest {
         @Test
         @DisplayName("Should return 400 with structured error for null question")
         void shouldReturn400ForNullQuestion() {
-            HttpResponse<?> response = controller.chat(new ChatRequest(null));
+            HttpResponse<Object> response = controller.chat(new ChatRequest(null));
 
             assertEquals(400, response.getStatus().getCode());
             assertInstanceOf(ErrorResponse.class, response.body());
@@ -45,7 +45,7 @@ class ChatControllerTest {
         @Test
         @DisplayName("Should return 400 with structured error for blank question")
         void shouldReturn400ForBlankQuestion() {
-            HttpResponse<?> response = controller.chat(new ChatRequest("   "));
+            HttpResponse<Object> response = controller.chat(new ChatRequest("   "));
 
             assertEquals(400, response.getStatus().getCode());
             assertInstanceOf(ErrorResponse.class, response.body());
@@ -63,7 +63,7 @@ class ChatControllerTest {
         void shouldReturn400ForQuestionWith2001Characters() {
             String question = "a".repeat(ChatRequest.MAX_QUESTION_LENGTH + 1);
 
-            HttpResponse<?> response = controller.chat(new ChatRequest(question));
+            HttpResponse<Object> response = controller.chat(new ChatRequest(question));
 
             assertEquals(400, response.getStatus().getCode());
             assertInstanceOf(ErrorResponse.class, response.body());
@@ -81,7 +81,7 @@ class ChatControllerTest {
         void shouldReturn500WithStructuredError() {
             chatService.setNextFailure(new RuntimeException("Groq API key invalid: sk-secret"));
 
-            HttpResponse<?> response = controller.chat(new ChatRequest("What is your email?"));
+            HttpResponse<Object> response = controller.chat(new ChatRequest("What is your email?"));
 
             assertEquals(500, response.getStatus().getCode());
             assertInstanceOf(ErrorResponse.class, response.body());
@@ -100,7 +100,7 @@ class ChatControllerTest {
             ChatResponse expected = new ChatResponse("ok");
             chatService.setNextResponse(expected);
 
-            HttpResponse<?> response = controller.chat(new ChatRequest(question));
+            HttpResponse<Object> response = controller.chat(new ChatRequest(question));
 
             assertEquals(200, response.getStatus().getCode());
             assertEquals(expected, response.body());
@@ -113,7 +113,7 @@ class ChatControllerTest {
             ChatResponse expected = new ChatResponse("guilhermelc10@gmail.com");
             chatService.setNextResponse(expected);
 
-            HttpResponse<?> response = controller.chat(request);
+            HttpResponse<Object> response = controller.chat(request);
 
             assertEquals(200, response.getStatus().getCode());
             assertEquals(expected, response.body());

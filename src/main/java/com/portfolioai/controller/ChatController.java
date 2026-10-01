@@ -22,7 +22,7 @@ public class ChatController {
 
     @Post
     @ExecuteOn(TaskExecutors.BLOCKING)
-    public HttpResponse<?> chat(@Body ChatRequest request) {
+    public HttpResponse<Object> chat(@Body ChatRequest request) {
 
         if (request.question() == null || request.question().isBlank()) {
             return HttpResponse.badRequest(new ErrorResponse("Question must not be blank"));
@@ -35,7 +35,7 @@ public class ChatController {
         try {
             ChatResponse response = chatService.processChat(request);
             return HttpResponse.ok(response);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException _) {
             return HttpResponse.serverError(new ErrorResponse("Unable to process your question"));
         }
     }

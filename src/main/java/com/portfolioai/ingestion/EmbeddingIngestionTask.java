@@ -1,15 +1,6 @@
 package com.portfolioai.ingestion;
 
-import dev.langchain4j.data.document.Document;
-import dev.langchain4j.data.document.DocumentSplitter;
-import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
-import dev.langchain4j.data.document.parser.TextDocumentParser;
-import dev.langchain4j.data.document.splitter.DocumentSplitters;
-import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.embedding.onnx.e5smallv2q.E5SmallV2QuantizedEmbeddingModel;
-import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,33 +8,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.portfolioai.config.EmbeddingModelFactory;
+
+import dev.langchain4j.data.document.Document;
+import dev.langchain4j.data.document.DocumentSplitter;
+import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
+import dev.langchain4j.data.document.parser.TextDocumentParser;
+import dev.langchain4j.data.document.splitter.DocumentSplitters;
+import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
+
 public class EmbeddingIngestionTask {
 
-    public static void main(String[] args) throws Exception {
-        System.out.println("Iniciando rotina de ingestão de embeddings com metadados...");
+    private static final Logger LOG = LoggerFactory.getLogger(EmbeddingIngestionTask.class);
+
+    public static void main(String[] args) throws IOException {
+        if (args.length > 0) {
+            LOG.debug("Ignoring {} CLI argument(s)", args.length);
+        }
+        LOG.info("Iniciando rotina de ingestão de embeddings com metadados...");
         ingest(Paths.get("docs"), Paths.get("target/classes/embeddings.json"));
     }
 
-    static void ingest(Path documentPath, Path outputPath) throws Exception {
-        System.out.println("-> Buscando documentos na pasta: " + documentPath.toAbsolutePath());
+    static void ingest(Path documentPath, Path outputPath) throws IOException {
+        LOG.info("-> Buscando documentos na pasta: {}", documentPath.toAbsolutePath());
 
         List<Document> enrichedDocuments = loadAndEnrichMarkdownDocuments(documentPath);
 
-        System.out.println("-> Total de arquivos .md processados e enriquecidos: " + enrichedDocuments.size());
+        LOG.info("-> Total de arquivos .md processados e enriquecidos: {}", enrichedDocuments.size());
 
         DocumentSplitter splitter = DocumentSplitters.recursive(3000, 250);
         List<TextSegment> segments = splitter.splitAll(enrichedDocuments);
 
-        EmbeddingModel embeddingModel = new E5SmallV2QuantizedEmbeddingModel();
+        EmbeddingModel embeddingModel = EmbeddingModelFactory.create();
         InMemoryEmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
         embeddingStore.addAll(embeddingModel.embedAll(segments).content(), segments);
 
         embeddingStore.serializeToFile(outputPath.toString());
 
-        System.out.println("Ingestão concluída! Arquivo salvo em: " + outputPath);
+        LOG.info("Ingestão concluída! Arquivo salvo em: {}", outputPath);
     }
 
-    static List<Document> loadAndEnrichMarkdownDocuments(Path documentPath) throws Exception {
+    static List<Document> loadAndEnrichMarkdownDocuments(Path documentPath) throws IOException {
         if (!Files.exists(documentPath)) {
             throw new IllegalStateException("ERRO: O Java não está conseguindo enxergar a pasta: " + documentPath.toAbsolutePath());
         }
@@ -54,7 +64,7 @@ public class EmbeddingIngestionTask {
             paths.filter(Files::isRegularFile)
                     .filter(p -> p.toString().toLowerCase().endsWith(".md"))
                     .forEach(filePath -> {
-                        System.out.println("-> Lendo arquivo: " + filePath.toString());
+                        LOG.info("-> Lendo arquivo: {}", filePath);
 
                         Document doc = FileSystemDocumentLoader.loadDocument(filePath, new TextDocumentParser());
 
@@ -64,7 +74,7 @@ public class EmbeddingIngestionTask {
                         doc.metadata().put("category", category);
                         doc.metadata().put("source_file", fileName);
 
-                        String header = String.format("[CONTEXTO - Categoria: %s | Arquivo: %s]\n\n", category.toUpperCase(), fileName);
+                        String header = String.format("[CONTEXTO - Categoria: %s | Arquivo: %s]%n%n", category.toUpperCase(), fileName);
                         String enrichedText = header + doc.text();
 
                         enrichedDocuments.add(Document.from(enrichedText, doc.metadata()));

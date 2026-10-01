@@ -2,7 +2,6 @@ package com.portfolioai.config;
 
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.embedding.onnx.e5smallv2q.E5SmallV2QuantizedEmbeddingModel;
 import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
@@ -39,7 +38,7 @@ class RagRetrievalTest {
 
         properties = new RagRetrievalProperties(4, 0.65);
         EmbeddingStore<TextSegment> store = InMemoryEmbeddingStore.fromFile(Paths.get(embeddingsUrl.toURI()));
-        EmbeddingModel model = new E5SmallV2QuantizedEmbeddingModel();
+        EmbeddingModel model = EmbeddingModelFactory.create();
         contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(store)
                 .embeddingModel(model)

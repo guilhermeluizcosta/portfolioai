@@ -8,6 +8,9 @@
         </encoder>
     </appender>
 
+    <!-- ponytail: langchain4j OnnxBertBiEncoder does not pass maxLength to DJL; suppress until upstream fix -->
+    <logger name="ai.djl.huggingface.tokenizers.HuggingFaceTokenizer" level="ERROR"/>
+
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
