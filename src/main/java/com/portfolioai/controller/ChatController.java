@@ -2,8 +2,8 @@ package com.portfolioai.controller;
 
 import com.portfolioai.dto.ChatRequest;
 import com.portfolioai.dto.ChatResponse;
+import com.portfolioai.dto.ErrorResponse;
 import com.portfolioai.service.ChatService;
-import dev.langchain4j.model.chat.ChatModel;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -22,18 +22,22 @@ public class ChatController {
 
     @Post
     @ExecuteOn(TaskExecutors.BLOCKING)
-    public HttpResponse<ChatResponse> chat(@Body ChatRequest request){
+    public HttpResponse<?> chat(@Body ChatRequest request) {
 
         if (request.question() == null || request.question().isBlank()) {
-            return HttpResponse.badRequest();
+            return HttpResponse.badRequest(new ErrorResponse("Question must not be blank"));
         }
 
         if (request.question().length() > ChatRequest.MAX_QUESTION_LENGTH) {
-            return HttpResponse.badRequest();
+            return HttpResponse.badRequest(new ErrorResponse("Question exceeds maximum length"));
         }
 
-        ChatResponse response = chatService.processChat(request);
-        return HttpResponse.ok(response);
+        try {
+            ChatResponse response = chatService.processChat(request);
+            return HttpResponse.ok(response);
+        } catch (RuntimeException ignored) {
+            return HttpResponse.serverError(new ErrorResponse("Unable to process your question"));
+        }
     }
 
 }

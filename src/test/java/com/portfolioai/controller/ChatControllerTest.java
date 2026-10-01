@@ -3,6 +3,7 @@ package com.portfolioai.controller;
 import com.portfolioai.ai.ResumeAssistant;
 import com.portfolioai.dto.ChatRequest;
 import com.portfolioai.dto.ChatResponse;
+import com.portfolioai.dto.ErrorResponse;
 import com.portfolioai.service.ChatService;
 import io.micronaut.http.HttpResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 @DisplayName("ChatController")
 class ChatControllerTest {
@@ -30,20 +32,24 @@ class ChatControllerTest {
     class WhenQuestionIsBlank {
 
         @Test
-        @DisplayName("Should return 400 for null question")
+        @DisplayName("Should return 400 with structured error for null question")
         void shouldReturn400ForNullQuestion() {
-            HttpResponse<ChatResponse> response = controller.chat(new ChatRequest(null));
+            HttpResponse<?> response = controller.chat(new ChatRequest(null));
 
             assertEquals(400, response.getStatus().getCode());
+            assertInstanceOf(ErrorResponse.class, response.body());
+            assertEquals("Question must not be blank", ((ErrorResponse) response.body()).error());
             assertFalse(chatService.wasCalled());
         }
 
         @Test
-        @DisplayName("Should return 400 for blank question")
+        @DisplayName("Should return 400 with structured error for blank question")
         void shouldReturn400ForBlankQuestion() {
-            HttpResponse<ChatResponse> response = controller.chat(new ChatRequest("   "));
+            HttpResponse<?> response = controller.chat(new ChatRequest("   "));
 
             assertEquals(400, response.getStatus().getCode());
+            assertInstanceOf(ErrorResponse.class, response.body());
+            assertEquals("Question must not be blank", ((ErrorResponse) response.body()).error());
             assertFalse(chatService.wasCalled());
         }
     }
@@ -57,10 +63,29 @@ class ChatControllerTest {
         void shouldReturn400ForQuestionWith2001Characters() {
             String question = "a".repeat(ChatRequest.MAX_QUESTION_LENGTH + 1);
 
-            HttpResponse<ChatResponse> response = controller.chat(new ChatRequest(question));
+            HttpResponse<?> response = controller.chat(new ChatRequest(question));
 
             assertEquals(400, response.getStatus().getCode());
+            assertInstanceOf(ErrorResponse.class, response.body());
+            assertEquals("Question exceeds maximum length", ((ErrorResponse) response.body()).error());
             assertFalse(chatService.wasCalled());
+        }
+    }
+
+    @Nested
+    @DisplayName("When chat service fails")
+    class WhenChatServiceFails {
+
+        @Test
+        @DisplayName("Should return 500 with structured error without exposing internal details")
+        void shouldReturn500WithStructuredError() {
+            chatService.setNextFailure(new RuntimeException("Groq API key invalid: sk-secret"));
+
+            HttpResponse<?> response = controller.chat(new ChatRequest("What is your email?"));
+
+            assertEquals(500, response.getStatus().getCode());
+            assertInstanceOf(ErrorResponse.class, response.body());
+            assertEquals("Unable to process your question", ((ErrorResponse) response.body()).error());
         }
     }
 
@@ -75,7 +100,7 @@ class ChatControllerTest {
             ChatResponse expected = new ChatResponse("ok");
             chatService.setNextResponse(expected);
 
-            HttpResponse<ChatResponse> response = controller.chat(new ChatRequest(question));
+            HttpResponse<?> response = controller.chat(new ChatRequest(question));
 
             assertEquals(200, response.getStatus().getCode());
             assertEquals(expected, response.body());
@@ -88,7 +113,7 @@ class ChatControllerTest {
             ChatResponse expected = new ChatResponse("guilhermelc10@gmail.com");
             chatService.setNextResponse(expected);
 
-            HttpResponse<ChatResponse> response = controller.chat(request);
+            HttpResponse<?> response = controller.chat(request);
 
             assertEquals(200, response.getStatus().getCode());
             assertEquals(expected, response.body());
@@ -99,6 +124,7 @@ class ChatControllerTest {
     private static final class RecordingChatService extends ChatService {
 
         private ChatResponse nextResponse;
+        private RuntimeException nextFailure;
         private ChatRequest lastRequest;
         private boolean called;
 
@@ -108,6 +134,10 @@ class ChatControllerTest {
 
         void setNextResponse(ChatResponse nextResponse) {
             this.nextResponse = nextResponse;
+        }
+
+        void setNextFailure(RuntimeException nextFailure) {
+            this.nextFailure = nextFailure;
         }
 
         boolean wasCalled() {
@@ -122,6 +152,9 @@ class ChatControllerTest {
         public ChatResponse processChat(ChatRequest request) {
             called = true;
             lastRequest = request;
+            if (nextFailure != null) {
+                throw nextFailure;
+            }
             return nextResponse;
         }
     }
