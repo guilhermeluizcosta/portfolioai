@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record ChatResponse(
         @Schema(
                 description = "Grounded answer from the resume assistant",
-                example = "guilhermelc10@gmail.com"
+                example = "user@email.com"
         )
         String answer
 ) {}

@@ -4,12 +4,9 @@ import com.portfolioai.dto.ChatRequest;
 import com.portfolioai.dto.ChatResponse;
 import com.portfolioai.dto.ErrorResponse;
 import com.portfolioai.service.ChatService;
-import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.scheduling.TaskExecutors;
-import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +24,6 @@ public class ChatController {
     }
 
     @Post
-    @ExecuteOn(TaskExecutors.BLOCKING)
     @Operation(
             summary = "Ask the resume assistant",
             description = "Submits a question about the portfolio owner's resume and returns a grounded answer."
@@ -47,22 +43,7 @@ public class ChatController {
             description = "Processing failure",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
-    public HttpResponse<Object> chat(@Body ChatRequest request) {
-
-        if (request.question() == null || request.question().isBlank()) {
-            return HttpResponse.badRequest(new ErrorResponse("Question must not be blank"));
-        }
-
-        if (request.question().length() > ChatRequest.MAX_QUESTION_LENGTH) {
-            return HttpResponse.badRequest(new ErrorResponse("Question exceeds maximum length"));
-        }
-
-        try {
-            ChatResponse response = chatService.processChat(request);
-            return HttpResponse.ok(response);
-        } catch (RuntimeException _) {
-            return HttpResponse.serverError(new ErrorResponse("Unable to process your question"));
-        }
+    public ChatResponse chat(@Body ChatRequest request) {
+        return chatService.processChat(request);
     }
-
 }
