@@ -10,6 +10,7 @@
 
 - [Visão Geral do Negócio](#-visão-geral-do-negócio)
 - [Desenvolvimento Local](#-desenvolvimento-local)
+- [Testes e TDD](#testes-e-tdd)
 
 ---
 
@@ -100,8 +101,27 @@ Resposta esperada (exemplo):
 #### 4. Executar testes
 
 ```bash
-mvn test 
+mvn test
 ```
+
+### Testes e TDD
+
+A suíte em `src/test/java` segue **red → green → refactor**: escrever o teste do comportamento desejado, implementar o mínimo para passar, refatorar sem mudar o contrato.
+
+| Área | Classe de teste | O que valida |
+|------|-----------------|--------------|
+| HTTP / chat | `ChatControllerTest` | 400 para pergunta vazia ou longa demais; 200 no happy path; 500 com corpo estruturado |
+| Serviço | `ChatServiceTest` | Delegação ao `ResumeAssistant` |
+| RAG | `RagRetrievalTest`, `RagCategoryClassifierTest`, `RagRetrievalPropertiesBindingTest` | Parâmetros, filtro por categoria, binding |
+| Prompt | `ResumeAssistantPromptTest` | System prompt bilíngue |
+| Timeout | `ChatModelTimeoutPropertiesBindingTest` | Binding de timeout Groq |
+| Health | `HealthEndpointTest` | `GET /health` UP (usa `HttpClient` de teste) |
+| Ingestão | `EmbeddingIngestionTaskTest` | Corpus ausente, metadados `category` / `source_file` |
+| DTO | `ErrorResponseSerdeTest` | Serialização de erros estruturados |
+
+Mudanças de comportamento (timeout, health, RAG, prompt, limite, erros) entram com teste falhando primeiro. Limpezas de build (`pom.xml`, arquivos mortos) reutilizam a suíte como rede de segurança — sem novos testes quando não há comportamento novo.
+
+Nenhum teste chama Groq ou rede externa: assistants e modelos são mockados ou substituídos por stubs.
 
 ### Contrato da API
 
@@ -226,9 +246,9 @@ Definida em `src/main/resources/application.yml`:
 
 ### Comandos úteis
 
-| Comando | Descrição |
-|---------|-----------|
-| `mvn clean compile` | Compila e regenera `embeddings.json` |
-| `mvn mn:run` | Sobe a API localmente |
-| `mvn test` | Roda a suíte de testes |
+| Comando                 | Descrição |
+|-------------------------|-----------|
+| `mvn clean compile`     | Compila e regenera `embeddings.json` |
+| `mvn mn:run`            | Sobe a API localmente |
+| `mvn test -B`           | Roda a suíte de testes |
 | `mvn package -DskipTests` | Gera o JAR executável |

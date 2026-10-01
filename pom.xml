@@ -22,7 +22,6 @@
     <micronaut.aot.enabled>false</micronaut.aot.enabled>
     <micronaut.aot.packageName>com.portfolioai.aot.generated</micronaut.aot.packageName>
     <exec.mainClass>com.portfolioai.Application</exec.mainClass>
-    <lombok.version>1.18.42</lombok.version>
   </properties>
 
   <repositories>
@@ -77,12 +76,6 @@
     </dependency>
 
     <dependency>
-      <groupId>io.micronaut.langchain4j</groupId>
-      <artifactId>micronaut-langchain4j-agentic</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>io.micronaut.test</groupId>
       <artifactId>micronaut-test-junit5</artifactId>
       <scope>test</scope>
@@ -110,14 +103,6 @@
       <artifactId>micronaut-management</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-
   </dependencies>
   <build>
     <plugins>
@@ -126,17 +111,17 @@
         <artifactId>micronaut-maven-plugin</artifactId>
         <configuration>
           <configFile>aot-${packaging}.properties</configFile>
-<configurationValidation>
-    <enabled>false</enabled>
+          <configurationValidation>
+            <enabled>false</enabled>
 
-    <suppressions>
-        <suppression>datasources.default.db-type</suppression>
-    </suppressions>
-    <failOnNotPresent>true</failOnNotPresent>
-    <validateDependencyInjection>false</validateDependencyInjection>
-    <cacheEnabled>true</cacheEnabled>
+            <suppressions>
+              <suppression>datasources.default.db-type</suppression>
+            </suppressions>
+            <failOnNotPresent>true</failOnNotPresent>
+            <validateDependencyInjection>false</validateDependencyInjection>
+            <cacheEnabled>true</cacheEnabled>
 
-</configurationValidation>
+          </configurationValidation>
 
         </configuration>
       </plugin>
@@ -146,13 +131,6 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <annotationProcessorPaths>
-
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>
-            </path>
-
             <path>
               <groupId>io.micronaut</groupId>
               <artifactId>micronaut-inject-java</artifactId>
