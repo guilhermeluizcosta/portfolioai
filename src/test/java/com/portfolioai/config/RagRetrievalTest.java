@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RagRetrievalTest {
 
     private static final int LEGACY_MAX_RESULTS = 10;
+    private static final String METADATA_CATEGORY = "category";
 
     private static ContentRetriever contentRetriever;
     private static RagRetrievalProperties properties;
@@ -42,6 +45,7 @@ class RagRetrievalTest {
                 .embeddingModel(model)
                 .maxResults(properties.maxResults())
                 .minScore(properties.minScore())
+                .dynamicFilter(RagCategoryClassifier::filterForQuery)
                 .build();
     }
 
@@ -65,5 +69,43 @@ class RagRetrievalTest {
                 .anyMatch(text -> text.contains("linkedin") || text.contains("guilhermelc10@gmail.com"));
 
         assertTrue(hasContactContent, "top results should include contact information");
+    }
+
+    @Test
+    @DisplayName("contact question retrieves only contacts category chunks")
+    void contactQuestionRetrievesOnlyContactsCategory() {
+        List<Content> results = contentRetriever.retrieve(Query.from("Qual o e-mail, telefone e LinkedIn para contato?"));
+
+        assertFalse(results.isEmpty());
+        boolean onlyContacts = results.stream()
+                .map(content -> content.textSegment().metadata().getString(METADATA_CATEGORY))
+                .allMatch("contacts"::equals);
+        assertTrue(onlyContacts, "contact question must not mix other categories");
+    }
+
+    @Test
+    @DisplayName("experience question does not rank education chunks in top results")
+    void experienceQuestionExcludesEducationFromTopResults() {
+        List<Content> results = contentRetriever.retrieve(
+                Query.from("Quais empresas você trabalhou e quais cargos ocupou na carreira?"));
+
+        assertFalse(results.isEmpty());
+        boolean hasEducation = results.stream()
+                .map(content -> content.textSegment().metadata().getString(METADATA_CATEGORY))
+                .anyMatch("education"::equals);
+        assertFalse(hasEducation, "experience question must not return education chunks");
+    }
+
+    @Test
+    @DisplayName("cross-category question still returns results from multiple categories")
+    void crossCategoryQuestionReturnsMultipleCategories() {
+        List<Content> results = contentRetriever.retrieve(
+                Query.from("Me dê um resumo do perfil profissional e também os contatos"));
+
+        assertFalse(results.isEmpty());
+        Set<String> categories = results.stream()
+                .map(content -> content.textSegment().metadata().getString(METADATA_CATEGORY))
+                .collect(Collectors.toSet());
+        assertTrue(categories.size() > 1, "cross-category question must retrieve from more than one category");
     }
 }

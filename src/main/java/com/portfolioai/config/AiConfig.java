@@ -46,6 +46,7 @@ public class AiConfig {
                 .embeddingModel(embeddingModel)
                 .maxResults(ragProperties.maxResults())
                 .minScore(ragProperties.minScore())
+                .dynamicFilter(RagCategoryClassifier::filterForQuery)
                 .build();
 
         return AiServices.builder(ResumeAssistant.class)

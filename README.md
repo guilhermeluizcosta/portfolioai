@@ -100,7 +100,7 @@ Resposta esperada (exemplo):
 #### 4. Executar testes
 
 ```bash
-mvn test -B --no-transfer-progress -Dsurefire.useFile=false -Dtest=!CleanFlowArchUnitTest
+mvn test 
 ```
 
 ### Contrato da API
@@ -117,7 +117,7 @@ Envia uma pergunta sobre o currículo.
 
 ```json
 {
-  "question": "Quais tecnologias você usou no Banco Inter?"
+  "question": "Quais tecnologias você usou na Empresa X?"
 }
 ```
 
