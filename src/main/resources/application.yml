@@ -1,6 +1,9 @@
 micronaut:
   application:
     name: portfolioai
+  server:
+    port: ${PORT:8080}
+    host: 0.0.0.0
   router:
     static-resources:
       swagger:

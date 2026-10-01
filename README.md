@@ -10,6 +10,8 @@
 
 - [Visão Geral do Negócio](#-visão-geral-do-negócio)
 - [Desenvolvimento Local](#-desenvolvimento-local)
+- [Documentação da API (`/docs`)](#documentação-da-api-docs)
+- [Deploy (Render)](#deploy-render)
 - [Testes e TDD](#testes-e-tdd)
 
 ---
@@ -104,6 +106,80 @@ Resposta esperada (exemplo):
 mvn test
 ```
 
+### Documentação da API (`/docs`)
+
+Com a API rodando (`mvn mn:run`), a Swagger UI fica em:
+
+```text
+http://localhost:8080/docs/index.html
+```
+
+A spec OpenAPI gerada em build também está em `target/classes/META-INF/swagger/portfolioai-0.1.yml`.
+
+### Deploy (Render)
+
+#### Pré-requisitos
+
+- Docker instalado
+- Conta no [Render](https://render.com)
+- `GROQ_API_KEY` configurada no dashboard do serviço
+
+#### Variáveis de ambiente
+
+| Variável | Obrigatória | Descrição |
+|----------|-------------|-----------|
+| `GROQ_API_KEY` | Sim | Chave Groq (secret no Render) |
+| `PORT` | Não | Injetada pelo Render (default **10000**); local sem `PORT` usa **8080** |
+| `JAVA_OPTS` | Não | Tuning JVM para free tier 512 MB (ver `render.yaml`) |
+
+#### Build e run local com Docker
+
+```bash
+docker build -t portfolioai .
+docker run --rm -e GROQ_API_KEY="gsk_..." -e PORT=10000 -p 10000:10000 portfolioai
+```
+
+Health check:
+
+```bash
+curl -sf http://localhost:10000/health | grep UP
+```
+
+#### Gate de memória (512 MB — free tier)
+
+Valida que o container sobe dentro do limite do Render free tier:
+
+```bash
+docker build -t portfolioai .
+docker run --rm --memory=512m \
+  -e GROQ_API_KEY=dummy-for-health-only \
+  -e PORT=10000 \
+  -p 10000:10000 \
+  portfolioai
+```
+
+Em outro terminal:
+
+```bash
+curl -sf http://localhost:10000/health | grep -q UP
+```
+
+Se o container morrer por OOM, ajuste `JAVA_OPTS` ou considere upgrade para plano Standard (2 GB).
+
+**Imagens Docker:** o `Dockerfile` usa `eclipse-temurin:25-jdk` / `25-jre`. Se o build falhar por tag inexistente, troque para a última tag Temurin 25 disponível em [Docker Hub — Eclipse Temurin](https://hub.docker.com/_/eclipse-temurin/tags).
+
+#### Deploy no Render
+
+1. Conecte o repositório no Render (ou use **Blueprint** com `render.yaml` na raiz).
+2. Tipo: **Web Service**, runtime **Docker**.
+3. Defina `GROQ_API_KEY` como secret (`sync: false` no `render.yaml`).
+4. Health check: `GET /health`.
+5. Após o deploy, confira `https://<seu-host>.onrender.com/health` e `https://<seu-host>.onrender.com/docs/index.html`.
+
+**Cold start (free tier):** após ~15 min sem tráfego a instância dorme; a primeira requisição pode levar ~1 min (spin-up + carga do modelo ONNX).
+
+**Integração Portfolio:** veja `ai/scratch/deploy-and-api-docs/portfolio-frontend-notes.md` (`CHAT_API_URL`, timeout, CORS).
+
 ### Testes e TDD
 
 A suíte em `src/test/java` segue **red → green → refactor**: escrever o teste do comportamento desejado, implementar o mínimo para passar, refatorar sem mudar o contrato.
@@ -116,6 +192,7 @@ A suíte em `src/test/java` segue **red → green → refactor**: escrever o tes
 | Prompt | `ResumeAssistantPromptTest` | System prompt bilíngue |
 | Timeout | `ChatModelTimeoutPropertiesBindingTest` | Binding de timeout Groq |
 | Health | `HealthEndpointTest` | `GET /health` UP (usa `HttpClient` de teste) |
+| Deploy / porta | `ServerPortBindingTest` | `${PORT:8080}` via env `PORT` |
 | Ingestão | `EmbeddingIngestionTaskTest` | Corpus ausente, metadados `category` / `source_file` |
 | DTO | `ErrorResponseSerdeTest` | Serialização de erros estruturados |
 
