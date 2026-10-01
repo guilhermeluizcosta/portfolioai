@@ -28,6 +28,10 @@ public class ChatController {
             return HttpResponse.badRequest();
         }
 
+        if (request.question().length() > ChatRequest.MAX_QUESTION_LENGTH) {
+            return HttpResponse.badRequest();
+        }
+
         ChatResponse response = chatService.processChat(request);
         return HttpResponse.ok(response);
     }

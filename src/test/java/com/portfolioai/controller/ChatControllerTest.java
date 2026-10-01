@@ -49,8 +49,37 @@ class ChatControllerTest {
     }
 
     @Nested
+    @DisplayName("When question exceeds max length")
+    class WhenQuestionExceedsMaxLength {
+
+        @Test
+        @DisplayName("Should return 400 for question with 2001 characters")
+        void shouldReturn400ForQuestionWith2001Characters() {
+            String question = "a".repeat(ChatRequest.MAX_QUESTION_LENGTH + 1);
+
+            HttpResponse<ChatResponse> response = controller.chat(new ChatRequest(question));
+
+            assertEquals(400, response.getStatus().getCode());
+            assertFalse(chatService.wasCalled());
+        }
+    }
+
+    @Nested
     @DisplayName("When question is valid")
     class WhenQuestionIsValid {
+
+        @Test
+        @DisplayName("Should return 200 for question with exactly 2000 characters")
+        void shouldReturn200ForQuestionWithExactly2000Characters() {
+            String question = "a".repeat(ChatRequest.MAX_QUESTION_LENGTH);
+            ChatResponse expected = new ChatResponse("ok");
+            chatService.setNextResponse(expected);
+
+            HttpResponse<ChatResponse> response = controller.chat(new ChatRequest(question));
+
+            assertEquals(200, response.getStatus().getCode());
+            assertEquals(expected, response.body());
+        }
 
         @Test
         @DisplayName("Should return 200 with answer from chat service")
