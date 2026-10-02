@@ -7,13 +7,10 @@ import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.rag.query.Query;
 import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.net.URL;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,14 +27,9 @@ class RagRetrievalTest {
     private static RagRetrievalProperties properties;
 
     @BeforeAll
-    static void loadRetriever() throws Exception {
-        URL embeddingsUrl = RagRetrievalTest.class.getClassLoader().getResource("embeddings.json");
-        if (embeddingsUrl == null) {
-            throw new IllegalStateException("embeddings.json not found — run mvn compile first");
-        }
-
+    static void loadRetriever() {
         properties = new RagRetrievalProperties(4, 0.65);
-        EmbeddingStore<TextSegment> store = InMemoryEmbeddingStore.fromFile(Paths.get(embeddingsUrl.toURI()));
+        EmbeddingStore<TextSegment> store = EmbeddingStoreLoader.load(RagRetrievalTest.class.getClassLoader());
         EmbeddingModel model = EmbeddingModelFactory.create();
         contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(store)

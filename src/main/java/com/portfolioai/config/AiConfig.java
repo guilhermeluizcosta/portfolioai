@@ -8,28 +8,15 @@ import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import io.micronaut.context.annotation.Factory;
 import jakarta.inject.Singleton;
-
-import java.net.URL;
 
 @Factory
 public class AiConfig {
 
     @Singleton
     public EmbeddingStore<TextSegment> embeddingStore() {
-        try {
-            URL embeddingsUrl = getClass().getClassLoader().getResource("embeddings.json");
-            if (embeddingsUrl == null) {
-                throw new IllegalStateException("Arquivo embeddings.json não encontrado.");
-            }
-
-            java.nio.file.Path path = java.nio.file.Paths.get(embeddingsUrl.toURI());
-            return InMemoryEmbeddingStore.fromFile(path);
-        } catch (Exception e) {
-            throw new RuntimeException("Falha ao carregar o banco de vetores local", e);
-        }
+        return EmbeddingStoreLoader.load(getClass().getClassLoader());
     }
 
     @Singleton

@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @MicronautTest(startApplication = false)
 @Property(name = "langchain4j.open-ai.api-key", value = "test-key")
 @Property(name = "PORT", value = "9999")
+@Property(name = "micronaut.server.port", value = "${PORT:8080}")
 class ServerPortBindingTest {
 
     @Inject
