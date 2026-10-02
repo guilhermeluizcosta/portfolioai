@@ -5,8 +5,6 @@ import com.portfolioai.dto.ChatRequest;
 import com.portfolioai.dto.ChatResponse;
 import com.portfolioai.exception.ChatProcessingException;
 import com.portfolioai.exception.InvalidQuestionException;
-import io.micronaut.scheduling.TaskExecutors;
-import io.micronaut.scheduling.annotation.ExecuteOn;
 import jakarta.inject.Singleton;
 
 @Singleton
@@ -18,7 +16,6 @@ public class ChatService {
         this.resumeAssistant = resumeAssistant;
     }
 
-    @ExecuteOn(TaskExecutors.BLOCKING)
     public ChatResponse processChat(ChatRequest request) {
         validateQuestion(request);
 

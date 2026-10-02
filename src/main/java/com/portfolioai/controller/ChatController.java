@@ -7,6 +7,8 @@ import com.portfolioai.service.ChatService;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +25,7 @@ public class ChatController {
         this.chatService = chatService;
     }
 
+    @ExecuteOn(TaskExecutors.BLOCKING)
     @Post
     @Operation(
             summary = "Ask the resume assistant",
