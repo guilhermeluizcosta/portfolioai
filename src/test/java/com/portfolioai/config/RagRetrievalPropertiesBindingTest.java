@@ -18,7 +18,7 @@ class RagRetrievalPropertiesBindingTest {
     @Test
     @DisplayName("binds maxResults and minScore from application configuration")
     void bindsFromConfiguration() {
-        assertEquals(4, properties.maxResults());
-        assertEquals(0.65, properties.minScore());
+        assertEquals(8, properties.maxResults());
+        assertEquals(0.58, properties.minScore());
     }
 }

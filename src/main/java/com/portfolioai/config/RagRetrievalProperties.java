@@ -8,8 +8,8 @@ import java.util.Objects;
 
 @ConfigurationProperties("portfolioai.rag")
 public record RagRetrievalProperties(
-        @Bindable(defaultValue = "4") Integer maxResults,
-        @Bindable(defaultValue = "0.65") Double minScore
+        @Bindable(defaultValue = "8") Integer maxResults,
+        @Bindable(defaultValue = "0.58") Double minScore
 ) {
 
     @ConfigurationInject

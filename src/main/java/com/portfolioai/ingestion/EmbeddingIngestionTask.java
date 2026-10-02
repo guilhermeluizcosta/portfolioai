@@ -41,7 +41,7 @@ public class EmbeddingIngestionTask {
 
         LOG.info("-> Total de arquivos .md processados e enriquecidos: {}", enrichedDocuments.size());
 
-        DocumentSplitter splitter = DocumentSplitters.recursive(3000, 250);
+        DocumentSplitter splitter = DocumentSplitters.recursive(1200, 100);
         List<TextSegment> segments = splitter.splitAll(enrichedDocuments);
 
         EmbeddingModel embeddingModel = EmbeddingModelFactory.create();

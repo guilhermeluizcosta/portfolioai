@@ -22,13 +22,14 @@ class RagRetrievalTest {
 
     private static final int LEGACY_MAX_RESULTS = 10;
     private static final String METADATA_CATEGORY = "category";
+    private static final String METADATA_SOURCE_FILE = "source_file";
 
     private static ContentRetriever contentRetriever;
     private static RagRetrievalProperties properties;
 
     @BeforeAll
     static void loadRetriever() {
-        properties = new RagRetrievalProperties(4, 0.65);
+        properties = new RagRetrievalProperties(8, 0.58);
         EmbeddingStore<TextSegment> store = EmbeddingStoreLoader.load(RagRetrievalTest.class.getClassLoader());
         EmbeddingModel model = EmbeddingModelFactory.create();
         contentRetriever = EmbeddingStoreContentRetriever.builder()
@@ -98,5 +99,48 @@ class RagRetrievalTest {
                 .map(content -> content.textSegment().metadata().getString(METADATA_CATEGORY))
                 .collect(Collectors.toSet());
         assertTrue(categories.size() > 1, "cross-category question must retrieve from more than one category");
+    }
+
+    @Test
+    @DisplayName("project links question retrieves all public project source files")
+    void projectLinksQuestionRetrievesPublicProjectSources() {
+        List<Content> results = contentRetriever.retrieve(Query.from("Quais os links para seus projetos?"));
+
+        Set<String> sourceFiles = sourceFilesFrom(results);
+        assertTrue(sourceFiles.contains("xadrez.md"), "expected xadrez.md in top results");
+        assertTrue(sourceFiles.contains("airbnb-rio.md"), "expected airbnb-rio.md in top results");
+        assertTrue(sourceFiles.contains("forum-comunidade.md"), "expected forum-comunidade.md in top results");
+    }
+
+    @Test
+    @DisplayName("experience listing question retrieves all experience source files")
+    void experienceListingQuestionRetrievesAllExperienceSources() {
+        List<Content> results = contentRetriever.retrieve(Query.from("Quais são suas experiências?"));
+
+        Set<String> sourceFiles = sourceFilesFrom(results);
+        assertTrue(sourceFiles.contains("banco-inter.md"), "expected banco-inter.md in top results");
+        assertTrue(sourceFiles.contains("uni-bh.md"), "expected uni-bh.md in top results");
+        assertTrue(sourceFiles.contains("acortinar.md"), "expected acortinar.md in top results");
+        assertTrue(sourceFiles.contains("dti-digital.md"), "expected dti-digital.md in top results");
+    }
+
+    @Test
+    @DisplayName("technology question retrieves profile and work-related categories")
+    void technologyQuestionRetrievesProfileAndWorkCategories() {
+        List<Content> results = contentRetriever.retrieve(Query.from("Quais tecnologias você domina?"));
+
+        assertFalse(results.isEmpty());
+        Set<String> categories = results.stream()
+                .map(content -> content.textSegment().metadata().getString(METADATA_CATEGORY))
+                .collect(Collectors.toSet());
+        assertTrue(categories.contains("profile"), "expected at least one profile segment");
+        assertTrue(categories.contains("experience") || categories.contains("projects"),
+                "expected at least one experience or projects segment");
+    }
+
+    private static Set<String> sourceFilesFrom(List<Content> results) {
+        return results.stream()
+                .map(content -> content.textSegment().metadata().getString(METADATA_SOURCE_FILE))
+                .collect(Collectors.toSet());
     }
 }
