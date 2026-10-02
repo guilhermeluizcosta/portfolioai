@@ -1,4 +1,4 @@
-# Experiência: Centro Universitário de Belo Horizonte (UniBH / Ânima Educação)
+# Experiência: Acortinar
 
 **Cargo:** Assistente de Vendas
 **Período:** 12/2020 - 04/2024

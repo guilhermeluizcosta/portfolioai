@@ -1,6 +1,7 @@
 # Projeto: Sistema de Xadrez
 
 **Tipo:** Pessoal
+**Link público:** Sim
 **Período:** 04/2024
 **Status:** Concluído
 

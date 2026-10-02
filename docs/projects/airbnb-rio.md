@@ -1,6 +1,7 @@
 # Projeto: Airbnb Rio - Ferramenta de Previsão de Preço de Imóvel
 
 **Tipo:** Pessoal
+**Link público:** Sim
 **Período:** 09/2024
 **Status:** Concluído
 

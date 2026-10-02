@@ -1,6 +1,7 @@
 # Projeto: Inter-Seven
 
 **Tipo:** Profissional
+**Link público:** Não
 **Período:** 07/2026 - Atualmente
 **Status:** Mantido
 

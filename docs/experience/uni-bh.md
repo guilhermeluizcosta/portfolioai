@@ -1,4 +1,4 @@
-# Experiência: Acortinar
+# Experiência: Centro Universitário de Belo Horizonte (UniBH / Ânima Educação)
 
 **Cargo:** Estagiário de TI
 **Período:** 02/2025 - 08/2025

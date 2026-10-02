@@ -1,6 +1,7 @@
 # Projeto: Forecast
 
 **Tipo:** Profissional
+**Link público:** Não
 **Período:** 10/2025 - 07/2026
 **Status:** Mantido
 
