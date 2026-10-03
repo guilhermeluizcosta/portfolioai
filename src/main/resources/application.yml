@@ -30,5 +30,7 @@ langchain4j:
     chat-model:
       base-url: https://api.groq.com/openai/v1
       model-name: openai/gpt-oss-20b
+      reasoning-effort: low
+      max-completion-tokens: 4096
       temperature: 0.2
       timeout: 90s
