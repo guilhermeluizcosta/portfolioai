@@ -1,5 +1,7 @@
 package com.portfolioai.config;
 
+import com.portfolioai.log.LoggingContentRetrieverListener;
+import com.portfolioai.log.LoggingEmbeddingModelListener;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatModel;
 import com.portfolioai.ai.ResumeAssistant;
@@ -23,9 +25,12 @@ public class AiConfig {
     public ResumeAssistant resumeAssistant(
             ChatModel chatLanguageModel,
             RagRetrievalProperties ragProperties,
-            EmbeddingStore<TextSegment> embeddingStore) {
+            EmbeddingStore<TextSegment> embeddingStore,
+            LoggingContentRetrieverListener retrieverListener,
+            LoggingEmbeddingModelListener embeddingModelListener) {
 
-        EmbeddingModel embeddingModel = EmbeddingModelFactory.create();
+        EmbeddingModel embeddingModel =
+                EmbeddingModelFactory.create(embeddingModelListener);
 
         ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)
@@ -34,6 +39,9 @@ public class AiConfig {
                 .minScore(ragProperties.minScore())
                 .dynamicFilter(RagCategoryClassifier::filterForQuery)
                 .build();
+
+        contentRetriever =
+                contentRetriever.addListener(retrieverListener);
 
         return AiServices.builder(ResumeAssistant.class)
                 .chatModel(chatLanguageModel)

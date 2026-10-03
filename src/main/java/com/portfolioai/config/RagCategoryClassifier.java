@@ -2,6 +2,8 @@ package com.portfolioai.config;
 
 import dev.langchain4j.rag.query.Query;
 import dev.langchain4j.store.embedding.filter.Filter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.Normalizer;
 import java.util.LinkedHashSet;
@@ -18,6 +20,9 @@ public final class RagCategoryClassifier {
     private static final String CATEGORY_PROFILE = "profile";
     private static final String CATEGORY_PROJECTS = "projects";
 
+    private static final Logger LOG =
+            LoggerFactory.getLogger(RagCategoryClassifier.class);
+
     private RagCategoryClassifier() {
     }
 
@@ -29,25 +34,53 @@ public final class RagCategoryClassifier {
     }
 
     public static Filter filterForQuestion(String question) {
+
         if (question == null || question.isBlank()) {
+            LOG.debug("rag.filter.skip reason=blank_question");
             return null;
         }
+
         String normalized = normalize(question);
+
         if (isProjectLinksQuestion(normalized)) {
+            LOG.debug("rag.filter.category=projects reason=project_links");
             return metadataKey("category").isEqualTo(CATEGORY_PROJECTS);
         }
+
         Set<String> categories = detectCategories(question);
+
         if (categories.size() != 1) {
+            LOG.debug(
+                    "rag.filter.none categories={} reason=ambiguous_category",
+                    categories
+            );
             return null;
         }
+
         String category = categories.iterator().next();
+
         if (CATEGORY_EXPERIENCE.equals(category)) {
+
             if (isBroadCareerQuestion(normalized)) {
-                return metadataKey("category").isIn(CATEGORY_EXPERIENCE, CATEGORY_PROJECTS);
+
+                LOG.debug(
+                        "rag.filter.categories=[experience,projects] reason=broad_career_question"
+                );
+
+                return metadataKey("category")
+                        .isIn(CATEGORY_EXPERIENCE, CATEGORY_PROJECTS);
             }
-            return metadataKey("category").isEqualTo(CATEGORY_EXPERIENCE);
+
+            LOG.debug("rag.filter.category=experience");
+
+            return metadataKey("category")
+                    .isEqualTo(CATEGORY_EXPERIENCE);
         }
-        return metadataKey("category").isEqualTo(category);
+
+        LOG.debug("rag.filter.category={}", category);
+
+        return metadataKey("category")
+                .isEqualTo(category);
     }
 
     static Set<String> detectCategories(String question) {
